@@ -1,0 +1,342 @@
+#Code to create database project
+
+#Create database 
+
+#Create title table
+CREATE TABLE title 
+	(titleID INT NOT NULL,
+	titleName VARCHAR(25) NOT NULL,
+	jobDescription VARCHAR(255) NOT NULL,
+	payRatePerHour FLOAT NOT NULL,
+	CONSTRAINT pk_titleID PRIMARY KEY (titleID) );
+
+#Create employee table
+CREATE TABLE employee(
+ employeeID INT NOT NULL,
+ firstName VARCHAR(25) NOT NULL,
+ lastName VARCHAR(25) NOT NULL,
+ employeeSSN VARCHAR(10) NULL,
+ hireDate DATE NOT NULL,
+ employeeShift VARCHAR(45) NOT NULL,
+ managerID INT NULL,
+ titleID INT NOT NULL,
+CONSTRAINT pk_employeeID PRIMARY KEY (employeeID),
+INDEX titlefk_idx (titleID ASC),
+  CONSTRAINT fk_title
+    FOREIGN KEY (titleID) REFERENCES title (titleID) ON DELETE CASCADE ON UPDATE CASCADE);
+
+#Create section table
+CREATE TABLE section(
+ sectionID INT NOT NULL,
+ numOfTables INT NULL,
+ maxAmountOfCustomers INT NULL,
+ locationInRestaurant VARCHAR(45) NULL,
+CONSTRAINT pk_sectionID PRIMARY KEY (sectionID)
+);
+
+#Create Junction table for many-to-many relationship between section and employee
+CREATE TABLE employee_section(
+ employeeID INT NOT NULL,
+ sectionID INT NOT NULL,
+CONSTRAINT pk_employee_sectionID PRIMARY KEY (employeeID, sectionID),
+INDEX employee_fk (employeeID ASC),
+INDEX section_fk (sectionID ASC),
+  CONSTRAINT employee_fk FOREIGN KEY (employeeID)   REFERENCES employee (employeeID)   ON DELETE CASCADE   ON UPDATE CASCADE,
+  CONSTRAINT section_fk   FOREIGN KEY (sectionID)   REFERENCES section (sectionID)   ON DELETE CASCADE   ON UPDATE CASCADE 
+);
+
+#Create "table" table_s
+CREATE TABLE res_table(
+ tableID INT NOT NULL,
+ numOfChairs INT NULL,
+ tableSize VARCHAR(15) NOT NULL,
+ sectionID INT NOT NULL,
+CONSTRAINT pk_tableID PRIMARY KEY (tableID),
+INDEX sectionfk_idx (sectionID ASC),
+  CONSTRAINT fk_section
+    FOREIGN KEY (sectionID)
+    REFERENCES section (sectionID)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE);
+
+#Create transaction table
+CREATE TABLE transaction(
+ transactionID INT NOT NULL,
+ transactionAmount FLOAT NOT NULL,
+ transactionDate DATE NOT NULL,
+ formOfPayment INT NOT NULL,
+CONSTRAINT pk_transactionID PRIMARY KEY (transactionID)
+);
+
+#Create Item table. This table's title is synonymous for menu
+#An item can be a drink, meal, ingredient, condiment, or any other food item 
+CREATE TABLE item(
+ itemID INT NOT NULL,
+ itemName VARCHAR(45) NOT NULL,
+ itemDescription VARCHAR(255),
+ price INT NOT NULL,
+CONSTRAINT pk_itemID PRIMARY KEY (itemID)
+);
+
+#Create ORDER table
+CREATE TABLE cus_order(
+ orderID INT NOT NULL,
+ itemQuantity INT NOT NULL,
+ itemID INT NOT NULL,
+CONSTRAINT pk_orderID PRIMARY KEY (orderID),
+INDEX itemfk_idx (itemID ASC),
+  CONSTRAINT fk_item
+    FOREIGN KEY (itemID)
+    REFERENCES item (itemID)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE);
+
+#Create customer table
+CREATE TABLE customer ( 
+ customerID INT NOT NULL,
+ customerFirstName VARCHAR(25) NOT NULL,
+ customerLastName VARCHAR(25) NOT NULL,
+ tableID INT NOT NULL,
+ orderID INT NOT NULL,
+CONSTRAINT pk_customerID PRIMARY KEY (customerID),
+INDEX tablefk_idx (tableID ASC),
+INDEX orderfk_idx (orderID ASC),
+  CONSTRAINT fk_table
+    FOREIGN KEY (tableID)
+    REFERENCES table_s (tableID)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+   CONSTRAINT fk_order
+    FOREIGN KEY (orderID)
+    REFERENCES order_s (orderID)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE);
+
+#Create Junction table for many-to-many relationship between customer and transaction
+CREATE TABLE customer_transaction (
+ customerID INT NOT NULL,
+ transactionID INT NOT NULL,
+CONSTRAINT pk_customer_transactionID PRIMARY KEY (customerID, transactionID),
+INDEX customer_fk (customerID ASC),
+INDEX transaction_fk (transactionID ASC),
+
+  CONSTRAINT customerfk
+   FOREIGN KEY (customerID)
+   REFERENCES customer (customerID)
+   ON DELETE CASCADE
+   ON UPDATE CASCADE,
+
+  CONSTRAINT transaction_fk
+   FOREIGN KEY (transactionID)
+   REFERENCES transaction (transactionID)
+   ON DELETE CASCADE
+   ON UPDATE CASCADE 
+);
+
+
+
+
+
+
+
+
+#Our Insert statements for all tables
+
+#Insert statements for "title" table 
+	INSERT INTO title VALUES (50, 'Manager', ' Opens or closes restaurant, purchase food and beverage inventory, open the register, track inventory, train and manage the staff, work with suppliers and manage advertising.', 30.00);
+
+	INSERT INTO title VALUES (51, 'Chef', ' Responsible for all that goes on in the kitchen. He/she should be responsible for hiring and training other cooks, prep persons and dishwashers. They are responsible for planning the menu and keeping track of kitchen supplies/inventory.', 25.00);
+	INSERT INTO title VALUES (52, 'Kitchen workers�, �Weigh and measure ingredients, go after pots and pans, and stir and strain soups and sauces. They also clean, peel, and slice vegetables and fruits and make salads. They may cut and grind meats, poultry, and seafood in preparation for cooking.', 8.25);
+
+	INSERT INTO title VALUES (53, 'Cashier', �In charge of the register. This would include cash and credit card transactions, tipping out wait staff, and balancing the register at the end of the shift. Must be competent with computerized register system and ha.ve good cash handling skills', 7.75);
+
+	INSERT INTO title VALUES (54, 'Waiter/waitress', Take customer's orders, escort guests to their seats, serve food and beverages, prepare itemized checks, set up and clear tables, and accept payments. ',  5.00);
+	INSERT INTO title VALUES (55, 'Bus Person', Assist the Waiters by cleaning tables throughout service. Generally, their duties include setting and clearing the table of dishes during and after the meal. ', 7.25);
+
+	INSERT INTO title VALUES (56, 'Bartenders', �Fill drink orders for customers. Bartenders collect payment, operate the cash register, maintain bar area, and serve food to customers seated at the bar. Bartenders are responsible for ordering and maintaining an inventory bar supplies.', 8.00);
+
+	INSERT INTO title VALUES (57, 'Fast Food Workers',' Take and place orders for customers that call in or come in to place a carry-out order. ', 7.25);
+
+	INSERT INTO title VALUES (58, 'Dishwasher', �Keeps the kitchen staff supplied with clean dishes, pots, pans and utensils. The may also have the job of keeping the kitchen clean during a shift, takes out trash, cleans floors, etc.', 7.25);
+        INSERT INTO title VALUES (59, 'Counter attendants�, Take orders and serve food at counters. Must clean counters, write itemized checks, and sometimes accept payment.', 5.00);
+
+
+#Insert statements for employee table
+	INSERT INTO employee (employeeID, firstName, lastName, employeeSSN, hireDate, employeeShift, titleID) VALUES (01, 'Kennedy', 'LeMaire', 555391111, '2009-11-09', 'morning',50 );
+	INSERT INTO employee VALUES (02, 'Alex', 'Hensley', 435009000, '2016-09-30', 'evening', 05, 56); 
+	INSERT INTO employee VALUES (03, 'Molly', 'Talms', 435009001, '2016-01-29', 'evening', 05, 57); 
+	INSERT INTO employee (employeeID, firstName, lastName, employeeSSN, hireDate, employeeShift, titleID) VALUES (05, 'Lisa', 'Mims', 489559660, '2012-07-01', 'evening', 50); 
+	INSERT INTO employee VALUES (04, 'Tom', 'Talms', 535000001, '2015-12-12', 'morning', 01, 54); 
+	INSERT INTO employee VALUES (07, 'Cardy', 'Reelly', 967001032, '2015-12-29', 'evening', 05, 55); 
+	INSERT INTO employee VALUES (06, 'Mark', 'Simeal', 111224364, '2008-02-15', 'morning', 01, 51); 
+	INSERT INTO employee VALUES (08, 'Missy', 'Tulley', 767331231, '2011-10-21', 'morning', 01, 52);
+	INSERT INTO employee VALUES (10, 'Mason', 'Ricks', 097658448, '2010-01-14', 'morning', 01, 52); 
+	INSERT INTO employee VALUES (09, 'Lionel', 'Matthis', 697076670, '2016-01-29', 'morning', 01, 53); 
+	INSERT INTO employee VALUES (11, 'Euler', 'Smart', 472838882, '2012-05-19', 'evening', 05, 55); 
+	INSERT INTO employee VALUES (12, 'Ron', 'Lee', 435089800, '2014-06-29', 'evening', 05, 51); 
+	INSERT INTO employee VALUES (13, 'Diret', 'Pey', 009887089, '2013-09-22', 'evening', 05, 54); 
+	INSERT INTO employee VALUES (14, 'Sarah', 'Joe', 102993929, '2006-10-16', 'afternoon', 05, 54);
+	INSERT INTO employee VALUES (15, 'Dylan', 'Joe', 102997729, '2015-09-09', 'afternoon', 05, 54);
+
+
+#insert statements for sections
+	INSERT INTO section VALUES (1, 4, 16, 'Front-Left');
+	INSERT INTO section VALUES (2, 2, 12, 'Back-Left');
+	INSERT INTO section VALUES (3, 4, 14, 'Front-Right');
+	INSERT INTO section VALUES (4, 3, 14, 'Back-Right');
+	INSERT INTO section VALUES (5, 3, 12, 'Side Patio');
+	INSERT INTO section VALUES (6, 5, 5, 'Bar');
+	INSERT INTO section VALUES (7, 5, 25, 'Center');
+	INSERT INTO section VALUES (8, 8, 43, 'back Patio');
+	INSERT INTO section VALUES (9, 4, 18, 'Front Patio');
+	INSERT INTO section VALUES (10, 0, 0, 'Kitchen');
+
+#insert statements for employee sections
+	INSERT INTO employee_section VALUES (10,06);
+	INSERT INTO employee_section VALUES (10,08);
+	INSERT INTO employee_section VALUES (10,10);
+	INSERT INTO employee_section VALUES (1,14);
+	INSERT INTO employee_section VALUES (1,15);
+	INSERT INTO employee_section VALUES (1,09);
+	INSERT INTO employee_section VALUES (1,02);
+	INSERT INTO employee_section VALUES (1,06);
+	INSERT INTO employee_section VALUES (1,08);
+	INSERT INTO employee_section VALUES (2,13);
+	INSERT INTO employee_section VALUES (2,08);
+	INSERT INTO employee_section VALUES (2,14);
+	INSERT INTO employee_section VALUES (1,10);
+	INSERT INTO employee_section VALUES (2,14);
+	INSERT INTO employee_section VALUES (6,02);
+	INSERT INTO employee_section VALUES (7,04);
+	INSERT INTO employee_section VALUES (9,04);
+	INSERT INTO employee_section VALUES (7,07);
+	INSERT INTO employee_section VALUES (9,07);
+	INSERT INTO employee_section VALUES (5,11);
+	INSERT INTO employee_section VALUES (3,11);
+	INSERT INTO employee_section VALUES (8,07);
+	INSERT INTO employee_section VALUES (9,11);
+	INSERT INTO employee_section VALUES (3,06);
+	INSERT INTO employee_section VALUES (3,09);
+	INSERT INTO employee_section VALUES (4,07);
+	INSERT INTO employee_section VALUES (4,15);
+
+#insert statements for res_table
+	INSERT INTO res_table VALUES (100, 4, 'medium', 1);
+	INSERT INTO res_table VALUES (101, 4, 'medium', 1);
+	INSERT INTO res_table VALUES (102, 4, 'medium', 1);
+	INSERT INTO res_table VALUES (103, 4, 'medium', 1);
+	INSERT INTO res_table VALUES (104, 4, 'medium', 1);
+	INSERT INTO res_table VALUES (105, 6, 'large', 2);
+	INSERT INTO res_table VALUES (106, 6, 'large', 2);
+	INSERT INTO res_table VALUES (107, 4, 'medium', 3);
+	INSERT INTO res_table VALUES (108, 4, 'medium', 3);
+	INSERT INTO res_table VALUES (109, 4, 'medium', 3);
+	INSERT INTO res_table VALUES (110, 2, 'small', 3);
+	INSERT INTO res_table VALUES (111, 4, 'medium', 4);
+	INSERT INTO res_table VALUES (112, 4, 'medium', 4);
+	INSERT INTO res_table VALUES (113, 6, 'medium', 4);
+	INSERT INTO res_table VALUES (200, 4, 'medium', 5);
+	INSERT INTO res_table VALUES (201, 4, 'medium', 5);
+	INSERT INTO res_table VALUES (202, 4, 'medium', 5);
+	INSERT INTO res_table VALUES (300, 1, 'single', 6);
+	INSERT INTO res_table VALUES (301, 1, 'single', 6);
+	INSERT INTO res_table VALUES (302, 1, 'single', 6);
+	INSERT INTO res_table VALUES (303, 1, 'single', 6);
+	INSERT INTO res_table VALUES (304, 1, 'single', 6);
+
+#insert transaction tables
+	INSERT INTO transaction VALUES (91, 53.96, '2016-07-05','CASH');
+	INSERT INTO transaction VALUES (72, 12.00, '2016-01-12','CASH');
+	INSERT INTO transaction VALUES (01, 98.21, '2001-01-01','CREDIT');
+	INSERT INTO transaction VALUES (92, 31.00, '2016-11-29','DEBIT');
+	INSERT INTO transaction VALUES (68, 23.98, '2014-09-15','CASH');
+	INSERT INTO transaction VALUES (93, 230.03, '2016-08-29','DEBIT');
+	INSERT INTO transaction VALUES (88, 77.00, '2016-07-05','CREDIT');
+	INSERT INTO transaction VALUES (99, 153.97, '2016-06-24','CASH');
+	INSERT INTO transaction VALUES (39, 56.3, '2016-07-15','DEBIT');
+	INSERT INTO transaction VALUES (02, 67.10, '2011-05-18','CREDIT');
+	INSERT INTO transaction VALUES (97, 137.83, '2004-07-05','CASH');
+	INSERT INTO transaction VALUES (11, 100.00, '2015-05-17','CASH');
+	INSERT INTO transaction VALUES (101, 187.86, '2016-07-05','DEBIT');
+	INSERT INTO transaction VALUES (17, 87.60, '2013-08-25','DEBIT');
+	INSERT INTO transaction VALUES (18, 7.90, '2013-08-25','DEBIT');
+	INSERT INTO transaction VALUES (19, 17.92, '2014-02-28','CASH');
+	INSERT INTO transaction VALUES (21, 21.00, '2014-01-20','DEBIT');
+
+#insert for item table
+	INSERT INTO item VALUES ('1','Lobster Bisque','', 5.95);
+	INSERT INTO item VALUES ('2','Buffalo Wings or Tenders','', 9.95);
+	INSERT INTO item VALUES ('3','Mozzarella Sticks','', 4.95);
+	INSERT INTO item VALUES ('4','Greek Salad','Fresh spinach, crisp romaine, tomatoes, and Greek olives, with a feta-walnut dressing.', 9.95);
+	INSERT INTO item VALUES ('5','Spinach Salad','Fresh spinach with mushrooms, hard boiled egg, and warm bacon vinaigrette.', 9.95);
+	INSERT INTO item VALUES ('6','Mediterranean Turkey Panini','Roast turkey on grilled rosemary focaccia with a spinach-artichoke cheese sauce.', 9.95 );
+	INSERT INTO item VALUES ('7','Pulled Pork','Our slow roasted pork simmered in tangy BBQ sauce and served on a toasted roll with cheddar cheese.', 9.95);
+	INSERT INTO item VALUES ('8','Applewood Smoked Cheddar','Angus patty topped with Cabot Farms Applewood Smoked Cheddar and pickled red onions.', 12.95);
+	INSERT INTO item VALUES ('9','Soft Drink','', 1.95);
+	INSERT INTO item VALUES ('10','Lemonade','', 2.95);
+	INSERT INTO item VALUES ('11','Stuffed Potato','', 6.55);
+	INSERT INTO item VALUES ('12','Wine','', 8.00);
+	INSERT INTO item VALUES ('13','Cake','', 7.35);
+
+#insert for oders table
+	Insert INTO cus_order VALUES (1, 3, 4);
+	Insert INTO cus_order VALUES (2, 1, 12);
+	Insert INTO cus_order VALUES (3, 4, 2);
+	Insert INTO cus_order VALUES (4, 1, 7);
+	Insert INTO cus_order VALUES (5, 2, 6);
+	Insert INTO cus_order VALUES (6, 10, 5);
+	Insert INTO cus_order VALUES (7, 4, 2);
+	Insert INTO cus_order VALUES (8, 3, 13);
+	Insert INTO cus_order VALUES (9, 1, 14);
+	Insert INTO cus_order VALUES (10, 3, 9);
+	Insert INTO cus_order VALUES (11, 1, 10);
+	Insert INTO cus_order VALUES (12, 2, 7);
+	Insert INTO cus_order VALUES (13, 3, 4);
+
+#insert for customer entries
+	Insert INTO customer VALUES (1, 'Grant', 'Hardy', 100, 13);
+	Insert INTO customer VALUES (2, 'Justin', 'Case', 100, 2);
+	Insert INTO customer VALUES (3, 'Bob', 'Smith', 103, 9);
+	Insert INTO customer VALUES (4, 'Joe', 'Alleva', 107, 13);
+	Insert INTO customer VALUES (5, 'Ed', 'Oregon', 107, 1);
+	Insert INTO customer VALUES (6, 'Lance', 'Murray', 109, 12);
+	Insert INTO customer VALUES (7, 'Tony', 'Myers', 105, 5);
+	Insert INTO customer VALUES (8, 'Daniel', 'Thomas', 108, 11);
+	Insert INTO customer VALUES (9, 'Thomas', 'Smith', 101, 7);
+	Insert INTO customer VALUES (10, 'Gabe', 'Hardy', 109, 10);
+	Insert INTO customer VALUES (11, 'Thomas', 'Case', 200, 3);
+	Insert INTO customer VALUES (12, 'Grant', 'Colon', 111, 4);
+	Insert INTO customer VALUES (13, 'Ross', 'Williams', 304, 6);
+	Insert INTO customer VALUES (14, 'Chris', 'Root', 103, 8);
+	Insert INTO customer VALUES (15, 'Morgan', 'Thompson', 106, 11);
+	Insert INTO customer VALUES (16, 'Cam', 'Root', 103, 8);
+	Insert INTO customer VALUES (17, 'Sarah', 'Root', 103, 12);
+	Insert INTO customer VALUES (18, 'Jamie', 'Sing', 303, 12);
+
+
+#insert for customer transaction table
+	INSERT INTO customer_transaction (1, 17);
+	INSERT INTO customer_transaction (1, 18);
+	INSERT INTO customer_transaction (2, 17);
+	INSERT INTO customer_transaction (3, 11);
+	INSERT INTO customer_transaction (3, 72);
+	INSERT INTO customer_transaction (3, 93);
+	INSERT INTO customer_transaction (14, 93);
+	INSERT INTO customer_transaction (16, 93);
+	INSERT INTO customer_transaction (4, 01);
+	INSERT INTO customer_transaction (5, 01);
+	INSERT INTO customer_transaction (15, 02);
+	INSERT INTO customer_transaction (8, 39);
+	INSERT INTO customer_transaction (5, 88);
+	INSERT INTO customer_transaction (6, 99);
+	INSERT INTO customer_transaction (1, 91);
+	INSERT INTO customer_transaction (2, 91);
+	INSERT INTO customer_transaction (10, 39);
+	INSERT INTO customer_transaction (12, 101);
+	INSERT INTO customer_transaction (5, 97);
+	INSERT INTO customer_transaction (7, 68);
+	INSERT INTO customer_transaction (5, 92);
+	INSERT INTO customer_transaction (17, 93);
+	INSERT INTO customer_transaction (17, 18);
+	INSERT INTO customer_transaction (18, 21);
+	INSERT INTO customer_transaction (17, 19);
